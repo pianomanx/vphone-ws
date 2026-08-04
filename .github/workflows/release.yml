@@ -1,0 +1,61 @@
+name: Release
+
+# Build the app and attach it to a GitHub release whenever a version tag is pushed.
+# Tag with the semver, e.g.:  git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # create the release and upload the asset
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: swift --version && xcodebuild -version
+
+      # Read the tag via env (never inline untrusted input in a shell), and validate
+      # it is a clean semver so downstream steps can interpolate it safely.
+      - name: Version from tag
+        id: v
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="${REF_NAME#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Tag '$REF_NAME' is not a valid version (expected vMAJOR.MINOR.PATCH)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build & bundle
+        env:
+          VPHONE_WS_VERSION: ${{ steps.v.outputs.version }}
+        run: ./scripts/bundle.sh
+
+      - name: Verify stamped version
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          got=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
+            .build/vphone-ws.app/Contents/Info.plist)
+          echo "bundled CFBundleShortVersionString = $got"
+          [ "$got" = "$VERSION" ] || { echo "version mismatch"; exit 1; }
+
+      - name: Package .app
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            .build/vphone-ws.app "vphone-ws-$VERSION.zip"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: vphone-ws-${{ steps.v.outputs.version }}.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: true
