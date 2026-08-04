@@ -1,0 +1,535 @@
+<style>
+  :root{
+    color-scheme: light dark;
+    /* cool neutrals biased toward the blue accent */
+    --bg:#eef0f4; --surface:#ffffff; --surface-2:#f6f7f9; --inset:#eceff3;
+    --border:#dfe3ea; --border-strong:#c9cfd9;
+    --text:#1a1d23; --dim:#5b6472; --faint:#8a94a3;
+    --accent:#2f6fe0; --accent-ink:#ffffff; --accent-soft:rgba(47,111,224,.12);
+    --good:#1f9d40; --good-soft:rgba(31,157,64,.13);
+    --warn:#b57d00; --warn-soft:rgba(181,125,0,.14);
+    --crit:#cf2231; --crit-soft:rgba(207,34,49,.12);
+    --shadow:0 12px 34px -14px rgba(20,26,40,.30), 0 2px 6px -2px rgba(20,26,40,.14);
+    --radius:12px; --radius-sm:8px;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101216; --surface:#1b1e24; --surface-2:#21252c; --inset:#15181d;
+      --border:#2b303a; --border-strong:#3a404c;
+      --text:#e7eaef; --dim:#9aa4b2; --faint:#69727f;
+      --accent:#5b9bff; --accent-ink:#0b1220; --accent-soft:rgba(91,155,255,.16);
+      --good:#3fb950; --good-soft:rgba(63,185,80,.16);
+      --warn:#d29922; --warn-soft:rgba(210,153,34,.16);
+      --crit:#f85149; --crit-soft:rgba(248,81,73,.15);
+      --shadow:0 18px 44px -18px rgba(0,0,0,.66), 0 3px 10px -4px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef0f4; --surface:#ffffff; --surface-2:#f6f7f9; --inset:#eceff3;
+    --border:#dfe3ea; --border-strong:#c9cfd9;
+    --text:#1a1d23; --dim:#5b6472; --faint:#8a94a3;
+    --accent:#2f6fe0; --accent-ink:#ffffff; --accent-soft:rgba(47,111,224,.12);
+    --good:#1f9d40; --good-soft:rgba(31,157,64,.13);
+    --warn:#b57d00; --warn-soft:rgba(181,125,0,.14);
+    --crit:#cf2231; --crit-soft:rgba(207,34,49,.12);
+    --shadow:0 12px 34px -14px rgba(20,26,40,.30), 0 2px 6px -2px rgba(20,26,40,.14);
+  }
+  :root[data-theme="dark"]{
+    --bg:#101216; --surface:#1b1e24; --surface-2:#21252c; --inset:#15181d;
+    --border:#2b303a; --border-strong:#3a404c;
+    --text:#e7eaef; --dim:#9aa4b2; --faint:#69727f;
+    --accent:#5b9bff; --accent-ink:#0b1220; --accent-soft:rgba(91,155,255,.16);
+    --good:#3fb950; --good-soft:rgba(63,185,80,.16);
+    --warn:#d29922; --warn-soft:rgba(210,153,34,.16);
+    --crit:#f85149; --crit-soft:rgba(248,81,73,.15);
+    --shadow:0 18px 44px -18px rgba(0,0,0,.66), 0 3px 10px -4px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .page{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    padding:48px 24px 80px; min-height:100vh;
+  }
+  .wrap{max-width:1120px; margin:0 auto}
+
+  /* ---- page masthead ---- */
+  .masthead{margin-bottom:40px}
+  .kicker{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 12px}
+  h1{font-size:clamp(28px,4vw,42px); line-height:1.05; margin:0 0 12px; letter-spacing:-.02em; text-wrap:balance; font-weight:700}
+  .lede{font-size:18px; color:var(--dim); max-width:60ch; margin:0}
+  .meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
+  .tag{font-family:var(--mono); font-size:12px; padding:5px 10px; border:1px solid var(--border-strong);
+    border-radius:999px; color:var(--dim); background:var(--surface)}
+  .tag b{color:var(--text); font-weight:600}
+
+  /* ---- section scaffolding ---- */
+  .section{margin-top:52px}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:6px}
+  .sec-num{font-family:var(--mono); font-size:13px; color:var(--faint)}
+  h2{font-size:22px; margin:0; letter-spacing:-.01em; font-weight:650}
+  .sec-note{color:var(--dim); margin:6px 0 22px; max-width:70ch}
+
+  /* ---- mac window chrome ---- */
+  .win{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden}
+  .titlebar{display:flex; align-items:center; gap:12px; height:40px; padding:0 14px;
+    background:var(--surface-2); border-bottom:1px solid var(--border)}
+  .lights{display:flex; gap:8px}
+  .lights i{width:12px; height:12px; border-radius:50%; display:block}
+  .lights i:nth-child(1){background:#ff5f57} .lights i:nth-child(2){background:#febc2e} .lights i:nth-child(3){background:#28c840}
+  .wtitle{font-size:13px; font-weight:600; color:var(--dim)}
+  .tbtools{margin-left:auto; display:flex; align-items:center; gap:8px}
+
+  /* toolbar buttons */
+  .btn{font-family:var(--sans); font-size:13px; border:1px solid var(--border-strong); background:var(--surface);
+    color:var(--text); padding:6px 12px; border-radius:var(--radius-sm); display:inline-flex; align-items:center;
+    gap:7px; cursor:default; white-space:nowrap}
+  .btn.sm{padding:5px 10px; font-size:12px}
+  .btn.primary{background:var(--accent); color:var(--accent-ink); border-color:transparent; font-weight:600}
+  .btn.danger{color:var(--crit); border-color:color-mix(in srgb,var(--crit) 40%,var(--border-strong))}
+  .btn svg{width:14px; height:14px}
+
+  .pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+    padding:4px 10px; border-radius:999px; border:1px solid transparent}
+  .pill .dot{width:7px; height:7px; border-radius:50%}
+  .pill.run{background:var(--good-soft); color:var(--good); border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+  .pill.run .dot{background:var(--good)}
+  .pill.stop{background:var(--inset); color:var(--faint); border:1px solid var(--border)}
+  .pill.stop .dot{background:var(--faint)}
+  .pill.warn{background:var(--warn-soft); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+  .pill.warn .dot{background:var(--warn)}
+
+  @media (prefers-reduced-motion: no-preference){
+    .pill.run .dot, .status-dot.run{animation:pulse 2.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--good-soft)}50%{box-shadow:0 0 0 4px transparent}}
+  }
+
+  /* ---- main manager layout ---- */
+  .mgr{display:grid; grid-template-columns:264px 1fr; min-height:560px}
+  .sidebar{background:var(--surface-2); border-right:1px solid var(--border); display:flex; flex-direction:column}
+  .search{margin:12px; display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:7px 10px; color:var(--faint); font-size:13px}
+  .search svg{width:14px;height:14px}
+  .vmlist{list-style:none; margin:0; padding:0 8px; overflow:auto; flex:1}
+  .vmrow{display:flex; gap:11px; align-items:center; padding:10px 10px; border-radius:var(--radius-sm); cursor:default}
+  .vmrow + .vmrow{margin-top:2px}
+  .vmrow.active{background:var(--accent-soft)}
+  .vmrow .phone{flex:none; color:var(--dim)}
+  .vmrow.active .phone{color:var(--accent)}
+  .vmrow .vmname{font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px}
+  .vmrow .vmsub{font-size:11.5px; color:var(--faint); font-family:var(--mono); margin-top:2px}
+  .status-dot{width:8px; height:8px; border-radius:50%; flex:none}
+  .status-dot.run{background:var(--good)} .status-dot.stop{background:var(--faint); opacity:.6}
+  .side-foot{border-top:1px solid var(--border); padding:10px 12px}
+  .newvm{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--accent); font-weight:600}
+
+  /* detail pane */
+  .detail{padding:22px 24px; overflow:auto}
+  .d-head{display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap}
+  .d-title{font-size:24px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:12px}
+  .d-path{font-family:var(--mono); font-size:12px; color:var(--faint); margin-top:6px}
+  .d-actions{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+  .callout{display:flex; gap:11px; align-items:flex-start; margin:22px 0 4px; padding:12px 14px; border-radius:var(--radius-sm);
+    background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 26%,transparent); font-size:13px; color:var(--text)}
+  .callout svg{width:16px;height:16px;flex:none;color:var(--accent);margin-top:1px}
+  .callout b{font-weight:650}
+  .grid-label{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin:26px 0 12px}
+  .specs{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden}
+  .spec{background:var(--surface); padding:12px 14px}
+  .spec .k{font-size:11px; color:var(--faint); text-transform:uppercase; letter-spacing:.06em}
+  .spec .v{font-size:14px; font-weight:600; margin-top:5px; font-variant-numeric:tabular-nums}
+  .spec .v.mono{font-family:var(--mono); font-weight:500; font-size:12.5px; word-break:break-all}
+  .vbadge{display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 7px; border-radius:5px; background:var(--warn-soft); color:var(--warn); font-weight:600}
+  .vbadge.exp{background:var(--crit-soft); color:var(--crit)}
+  .vbadge.reg{background:var(--accent-soft); color:var(--accent)}
+
+  /* ---- annotated captions ---- */
+  .cap{display:grid; grid-template-columns:1fr; gap:8px; margin-top:16px}
+  .anno{display:flex; gap:10px; font-size:13.5px; color:var(--dim); align-items:flex-start}
+  .anno .b{font:600 11px/1 var(--mono); letter-spacing:.04em; color:var(--accent); background:var(--accent-soft);
+    padding:4px 7px; border-radius:6px; flex:none; margin-top:1px}
+  .anno strong{color:var(--text); font-weight:600}
+
+  /* ---- wizard ---- */
+  .wizard{display:grid; grid-template-columns:210px 1fr; min-height:440px}
+  .steps{background:var(--surface-2); border-right:1px solid var(--border); padding:20px 16px; list-style:none; margin:0}
+  .steps li{display:flex; gap:11px; align-items:center; padding:9px 8px; border-radius:var(--radius-sm); font-size:13.5px; color:var(--faint)}
+  .steps li .n{width:22px; height:22px; border-radius:50%; border:1.5px solid var(--border-strong); display:grid; place-items:center; font:600 11px var(--mono); flex:none}
+  .steps li.done{color:var(--text)} .steps li.done .n{background:var(--good); border-color:var(--good); color:#fff}
+  .steps li.now{color:var(--text); font-weight:600} .steps li.now .n{border-color:var(--accent); color:var(--accent)}
+  .wbody{padding:24px 26px}
+  .wbody h3{margin:0 0 4px; font-size:18px; font-weight:650}
+  .wbody .sub{color:var(--dim); font-size:13.5px; margin:0 0 20px}
+  .variant-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .vcard{border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px 14px; background:var(--surface)}
+  .vcard.sel{border-color:var(--accent); background:var(--accent-soft)}
+  .vcard .vh{display:flex; align-items:center; justify-content:space-between; font-weight:650; font-size:14px}
+  .vcard .vd{font-size:12px; color:var(--dim); margin-top:6px}
+  .sec-meter{display:flex; gap:3px; margin-top:10px}
+  .sec-meter i{height:4px; flex:1; border-radius:2px; background:var(--border-strong)}
+  .sec-meter i.on{background:var(--accent)}
+  .wfoot{display:flex; justify-content:space-between; align-items:center; padding:14px 26px; border-top:1px solid var(--border); background:var(--surface-2)}
+  .field{margin-top:16px}
+  .field label{display:block; font-size:12px; color:var(--dim); margin-bottom:6px; font-weight:600}
+  .input{width:100%; background:var(--inset); border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 11px;
+    font-family:var(--mono); font-size:13px; color:var(--text)}
+  .stepper{display:inline-flex; align-items:center; gap:0; border:1px solid var(--border-strong); border-radius:var(--radius-sm); overflow:hidden}
+  .stepper span{padding:8px 12px; font-family:var(--mono); font-size:13px}
+  .stepper b{padding:8px 16px; font-family:var(--mono); font-size:13px; font-weight:600; border-left:1px solid var(--border); border-right:1px solid var(--border); min-width:70px; text-align:center}
+  .segmented{display:inline-flex; border:1px solid var(--border-strong); border-radius:var(--radius-sm); overflow:hidden}
+  .segmented .seg{padding:7px 15px; font-size:13px; color:var(--dim); border-right:1px solid var(--border-strong)}
+  .segmented .seg:last-child{border-right:0}
+  .segmented .seg.on{background:var(--accent); color:var(--accent-ink); font-weight:600}
+
+  /* ---- task console ---- */
+  .console-wrap{display:grid; grid-template-columns:1fr; gap:0}
+  .task{border-bottom:1px solid var(--border); padding:16px 20px}
+  .task:last-child{border-bottom:0}
+  .task-head{display:flex; align-items:center; gap:12px}
+  .task-title{font-weight:650; font-size:14px}
+  .stages{display:flex; gap:6px; margin:14px 0; flex-wrap:wrap}
+  .stage{font-family:var(--mono); font-size:11px; padding:4px 9px; border-radius:6px; border:1px solid var(--border); color:var(--faint); display:flex; gap:6px; align-items:center}
+  .stage.done{color:var(--good); border-color:color-mix(in srgb,var(--good) 30%,transparent); background:var(--good-soft)}
+  .stage.now{color:var(--accent); border-color:var(--accent); background:var(--accent-soft); font-weight:600}
+  .log{background:#0e1013; border:1px solid #232833; border-radius:var(--radius-sm); padding:12px 14px; font-family:var(--mono);
+    font-size:12px; line-height:1.65; color:#c7d0dc; overflow-x:auto}
+  .log .ok{color:#3fb950} .log .info{color:#5b9bff} .log .warn2{color:#d29922} .log .dimlog{color:#6b7484}
+  .log .path{color:#9aa4b2}
+  .elapsed{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--faint)}
+
+  /* ---- readiness ---- */
+  .checks{list-style:none; margin:0; padding:0}
+  .check{display:flex; gap:14px; align-items:flex-start; padding:16px 20px; border-bottom:1px solid var(--border)}
+  .check:last-child{border-bottom:0}
+  .ci{width:26px; height:26px; border-radius:50%; display:grid; place-items:center; flex:none; margin-top:1px}
+  .ci.ok{background:var(--good-soft); color:var(--good)} .ci.warn{background:var(--warn-soft); color:var(--warn)}
+  .ci svg{width:15px;height:15px}
+  .ctext{flex:1}
+  .ctext .ct{font-weight:600; font-size:14px}
+  .ctext .cd{font-size:13px; color:var(--dim); margin-top:3px}
+  .ctext code{font-family:var(--mono); font-size:12px; background:var(--inset); border:1px solid var(--border); padding:2px 6px; border-radius:5px; color:var(--text)}
+  .cfix{margin-top:9px}
+
+  /* ---- design legend ---- */
+  .legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px}
+  .lg{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px}
+  .lg h4{margin:0 0 12px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); font-family:var(--mono)}
+  .swatches{display:flex; flex-direction:column; gap:8px}
+  .sw{display:flex; align-items:center; gap:11px; font-size:13px}
+  .sw i{width:26px; height:26px; border-radius:7px; border:1px solid rgba(128,128,128,.25); flex:none}
+  .sw .lab{color:var(--dim)} .sw .lab b{color:var(--text); font-weight:600}
+  .typ-sans{font-family:var(--sans)} .typ-mono{font-family:var(--mono)}
+  .typ-row{padding:9px 0; border-bottom:1px dashed var(--border)}
+  .typ-row:last-child{border-bottom:0}
+  .typ-row .big{font-size:19px; font-weight:650} .typ-row .small{font-size:12px; color:var(--faint); margin-top:2px}
+
+  .foot{margin-top:56px; padding-top:22px; border-top:1px solid var(--border); color:var(--faint); font-size:13px; font-family:var(--mono)}
+
+  @media (max-width:820px){
+    .mgr,.wizard{grid-template-columns:1fr}
+    .sidebar,.steps{border-right:0; border-bottom:1px solid var(--border)}
+    .d-actions{margin-left:0; width:100%}
+  }
+</style>
+
+<div class="page">
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Design review · proposed UI</p>
+    <h1>vphone Workstation</h1>
+    <p class="lede">A friendly desktop manager for your virtual iPhones. It handles the library, settings, and lifecycle — and hands the live device off to <span class="typ-mono">vphone-cli</span>, which opens the iPhone screen in its own window.</p>
+    <div class="meta-row">
+      <span class="tag"><b>Standalone SwiftUI app</b> · macOS 15+</span>
+      <span class="tag">Shells out to <b>vphone-cli</b> · no entitlements needed</span>
+      <span class="tag">Grounded on <b>main @ 966bddb</b></span>
+      <span class="tag">iOS + cloudOS from <b>restore-info.json</b></span>
+      <span class="tag">v1 · full manager + create wizard</span>
+    </div>
+  </header>
+
+  <!-- ============ SCREEN 1 : MAIN MANAGER ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Main window — the library</h2></div>
+    <p class="sec-note">The home screen: a sidebar of every VM with its live status, and a detail pane for the selected one. Scan-and-operate, not read top-to-bottom — status reads at a glance from the colored dot, and the primary action is always the big button.</p>
+
+    <div class="win">
+      <div class="titlebar">
+        <span class="lights"><i></i><i></i><i></i></span>
+        <span class="wtitle">vphone Workstation</span>
+        <span class="tbtools">
+          <span class="pill run"><span class="dot"></span>Host ready</span>
+        </span>
+      </div>
+      <div class="mgr">
+        <!-- sidebar -->
+        <aside class="sidebar">
+          <div class="search">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+            Search VMs
+          </div>
+          <ul class="vmlist">
+            <li class="vmrow active">
+              <span class="phone"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 4.5h4"/></svg></span>
+              <div><div class="vmname"><span class="status-dot run"></span>research-jb</div><div class="vmsub">iOS 27.0 · cloudOS 26.4</div></div>
+            </li>
+            <li class="vmrow">
+              <span class="phone"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 4.5h4"/></svg></span>
+              <div><div class="vmname"><span class="status-dot stop"></span>clean-26</div><div class="vmsub">iOS 26.3 · cloudOS 26.3</div></div>
+            </li>
+            <li class="vmrow">
+              <span class="phone"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 4.5h4"/></svg></span>
+              <div><div class="vmname"><span class="status-dot stop"></span>touch-test</div><div class="vmsub">iOS 18.6.2 · cloudOS 26.1</div></div>
+            </li>
+            <li class="vmrow">
+              <span class="phone"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 4.5h4"/></svg></span>
+              <div><div class="vmname"><span class="status-dot stop"></span>audio-27</div><div class="vmsub">iOS 27.0 · cloudOS 26.4</div></div>
+            </li>
+          </ul>
+          <div class="side-foot"><span class="newvm">＋ New VM…</span></div>
+        </aside>
+
+        <!-- detail -->
+        <div class="detail">
+          <div class="d-head">
+            <div>
+              <div class="d-title">research-jb <span class="pill run"><span class="dot"></span>Running</span></div>
+              <div class="d-path">~/.vphone/VMs/research-jb</div>
+            </div>
+            <div class="d-actions">
+              <span class="btn danger"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/></svg>Stop</span>
+              <span class="btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M6 6h4v4"/></svg>Show screen</span>
+              <span class="btn sm">Settings</span>
+              <span class="btn sm">Clone</span>
+              <span class="btn sm">⋯</span>
+            </div>
+          </div>
+
+          <div class="callout">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.8h.01"/></svg>
+            <span><b>The iPhone screen lives in its own window.</b> vphone Workstation manages this VM; the live display, touch, and menus are handled by <span class="typ-mono">vphone-cli</span>. “Show screen” brings that window forward.</span>
+          </div>
+
+          <div class="grid-label">Overview</div>
+          <div class="specs">
+            <div class="spec"><div class="k">iOS</div><div class="v">27.0 <span style="color:var(--faint);font-weight:400">(24A5380h)</span></div></div>
+            <div class="spec"><div class="k">cloudOS</div><div class="v">26.4 <span style="color:var(--faint);font-weight:400">(23E5207q)</span></div></div>
+            <div class="spec"><div class="k">Variant</div><div class="v"><span class="vbadge exp">experimental</span></div></div>
+            <div class="spec"><div class="k">CPU</div><div class="v">8 cores</div></div>
+            <div class="spec"><div class="k">Memory</div><div class="v">8192 MB</div></div>
+            <div class="spec"><div class="k">Disk</div><div class="v">64 GB <span style="color:var(--faint);font-weight:400">sparse</span></div></div>
+            <div class="spec"><div class="k">Network</div><div class="v">NAT</div></div>
+            <div class="spec"><div class="k">Device</div><div class="v mono">iPhone17,3</div></div>
+            <div class="spec"><div class="k">UDID</div><div class="v mono">0000FE01-67C0FDA7…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">
+      <div class="anno"><span class="b">status</span><span><strong>Live running/stopped</strong> is computed by probing <span class="typ-mono">lsof</span> on each VM's <span class="typ-mono">Disk.img</span> (the CLI's own truth source) — it isn't in <span class="typ-mono">vm list --json</span>, so the app polls it every couple of seconds.</span></div>
+      <div class="anno"><span class="b">versions</span><span><strong>iOS &amp; cloudOS</strong> come straight from <span class="typ-mono">restore-info.json</span> (surfaced as <span class="typ-mono">restoreInfo</span> in <span class="typ-mono">vm list/info --json</span>) — recorded on every restore and carried inside <span class="typ-mono">vm export</span>, so it's correct even for imported VMs with no IPSW folder. No plist parsing in the app.</span></div>
+      <div class="anno"><span class="b">variant</span><span>The <strong>patch variant</strong> (regular/jb/exp) isn't recorded by the CLI, so vphone-ws remembers what the wizard used in a small app-owned sidecar; VMs created elsewhere show <em>Unknown</em> until upstream adds it to <span class="typ-mono">restore-info.json</span>.</span></div>
+      <div class="anno"><span class="b">actions</span><span><strong>Start</strong> spawns <span class="typ-mono">vphone-cli vm launch &lt;name&gt;</span>; <strong>Stop</strong> runs <span class="typ-mono">vm stop</span>. Clone/Rename/Delete/Export map 1:1 to CLI subcommands (always with explicit names + <span class="typ-mono">--force</span> so nothing prompts).</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2 : SETTINGS ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">02</span><h2>VM settings</h2></div>
+    <p class="sec-note">Edit everything the VM's config safely supports — CPU, memory, and network. Parts baked into the built device (disk, display, identity) are shown for reference but can't change afterward. Edits apply on the next boot.</p>
+
+    <div class="win" style="max-width:620px">
+      <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span><span class="wtitle">research-jb — Settings</span></div>
+      <div style="padding:24px 26px">
+        <div class="field">
+          <label>CPU cores</label>
+          <span class="stepper"><span>−</span><b>8</b><span>＋</span></span>
+        </div>
+        <div class="field">
+          <label>Memory</label>
+          <span class="stepper"><span>−</span><b>8192 MB</b><span>＋</span></span>
+        </div>
+        <div class="field">
+          <label>Network</label>
+          <div class="segmented"><span class="seg on">NAT</span><span class="seg">Bridged</span><span class="seg">Host-only</span><span class="seg">None</span></div>
+        </div>
+
+        <div class="grid-label">Fixed at build time</div>
+        <div class="specs">
+          <div class="spec"><div class="k">Disk</div><div class="v">64 GB</div></div>
+          <div class="spec"><div class="k">Display</div><div class="v mono">1290×2796 @460</div></div>
+          <div class="spec"><div class="k">Device</div><div class="v mono">iPhone17,3</div></div>
+        </div>
+      </div>
+      <div class="wfoot"><span class="btn sm">Cancel</span><span class="btn primary">Save</span></div>
+    </div>
+
+    <div class="cap">
+      <div class="anno"><span class="b">writes</span><span>Every edit goes through <span class="typ-mono">vphone-cli vm config</span> — the app never writes <span class="typ-mono">config.plist</span> itself, so the CLI stays the single source of truth. CPU/memory work today; the <strong>Network</strong> control needs a small <span class="typ-mono">vm config --network</span> option added to vphone-cli (dovetails with the in-flight bridged-networking work).</span></div>
+      <div class="anno"><span class="b">timing</span><span>Settings are editable while the VM is <strong>stopped</strong>; changes take effect at the next boot, since the VZ configuration is assembled fresh each launch.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3 : CREATE WIZARD ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Create-VM wizard</h2></div>
+    <p class="sec-note">A short, guided sheet that turns the long <span class="typ-mono">vm create</span> pipeline into four calm steps. Variants are explained in plain language with a security-level meter, so “which one do I pick” is obvious without reading docs.</p>
+
+    <div class="win" style="max-width:760px">
+      <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span><span class="wtitle">New VM</span></div>
+      <div class="wizard">
+        <ol class="steps">
+          <li class="done"><span class="n">✓</span> Name</li>
+          <li class="now"><span class="n">2</span> iOS &amp; variant</li>
+          <li><span class="n">3</span> Resources</li>
+          <li><span class="n">4</span> Review &amp; create</li>
+        </ol>
+        <div class="wbody">
+          <h3>Choose iOS &amp; variant</h3>
+          <p class="sub">Pick how much of iOS's security you want peeled back. You can always create another VM with a different variant.</p>
+          <div class="variant-grid">
+            <div class="vcard"><div class="vh">Regular <span class="vbadge reg">safe</span></div><div class="vd">Boots stock-like iOS with core bypasses. Best starting point.</div><div class="sec-meter"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></div>
+            <div class="vcard"><div class="vh">Developer</div><div class="vd">Adds entitlement &amp; debug bypass for tooling.</div><div class="sec-meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+            <div class="vcard sel"><div class="vh">Jailbreak</div><div class="vd">Full JB — Sileo &amp; TrollStore auto-install on first boot.</div><div class="sec-meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+            <div class="vcard"><div class="vh">Experimental</div><div class="vd">JB + anti-VM-detection research patches.</div><div class="sec-meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+          </div>
+          <div class="field">
+            <label>iOS source — userland</label>
+            <input class="input" value="Download 26.3 (23D127)  ▾   — or choose an .ipsw…" readonly>
+          </div>
+          <div class="field">
+            <label>cloudOS source — kernel</label>
+            <input class="input" value="Download 26.4 (23E5207q)  ▾   — or choose an .ipsw…" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="wfoot">
+        <span class="btn sm">Back</span>
+        <span class="btn primary">Continue</span>
+      </div>
+    </div>
+
+    <div class="cap">
+      <div class="anno"><span class="b">honest</span><span>The <strong>Review</strong> step states plainly that creating downloads multi-GB IPSWs, will <strong>ask you to authenticate once</strong> (for the CFW host-mount), and takes several minutes — then it runs live in the Task console (next screen).</span></div>
+      <div class="anno"><span class="b">safe</span><span>You authenticate through <strong>macOS's native authentication dialog</strong> — the same system prompt other apps use to make admin changes (Touch ID where available). No password is ever typed into the app, placed on a command line, or written to a log; <span class="typ-mono">vphone-ws</span> never sees it. The wizard still blocks early on a nested-VM host, matching the CLI's own guard.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3 : TASK CONSOLE ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Task console</h2></div>
+    <p class="sec-note">Every long or privileged operation (create, restore, CFW install, export/import) runs here — one place for progress, live logs, and cancellation. Stage chips are parsed from the CLI's <span class="typ-mono">=== … ===</span> banners; the terminal shows the raw stream for anyone who wants it.</p>
+
+    <div class="win">
+      <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span><span class="wtitle">Tasks</span></div>
+      <div class="console-wrap">
+        <div class="task">
+          <div class="task-head">
+            <span class="pill warn"><span class="dot"></span>Running</span>
+            <span class="task-title">Creating “clean-26” · Regular</span>
+            <span class="elapsed">04:12 elapsed</span>
+            <span class="btn sm danger" style="margin-left:12px">Cancel</span>
+          </div>
+          <div class="stages">
+            <span class="stage done">✓ Prepare</span>
+            <span class="stage done">✓ Patch</span>
+            <span class="stage now">▸ Restore</span>
+            <span class="stage">Install CFW</span>
+            <span class="stage">First boot</span>
+          </div>
+          <div class="log">
+<span class="dimlog">[*]</span> <span class="info">=== Restore phase ===</span>
+<span class="ok">[+]</span> SHSH fetched for ECID 67C0FDA7D0F90EB3
+<span class="dimlog">[*]</span> entering recovery, sending iBEC…
+<span class="ok">[+]</span> restore: <span class="path">uploading RestoreRamDisk</span> <span class="dimlog">(38%)</span>
+<span class="info">[i]</span> pmd3: waiting for device mode <span class="dimlog">Recovery → Restore</span><span style="opacity:.5">▊</span>
+          </div>
+        </div>
+        <div class="task">
+          <div class="task-head">
+            <span class="pill run"><span class="dot"></span>Done</span>
+            <span class="task-title">Export “touch-test” → touch-test.tar.xz</span>
+            <span class="elapsed">finished 2m ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">
+      <div class="anno"><span class="b">cancel</span><span><strong>Cancel</strong> forwards <span class="typ-mono">SIGINT</span> to the child (the CLI already handles it), and the app watches the child's exit code to mark success or failure — no guessing from log text.</span></div>
+      <div class="anno"><span class="b">robust</span><span>The console is the extensibility seam: any future long-running CLI verb becomes a task here for free.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4 : HOST READINESS ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Host readiness</h2></div>
+    <p class="sec-note">Host prerequisites are the #1 reason a launch fails with a cryptic <span class="typ-mono">zsh: killed</span>. This panel checks them up front and, when something's off, says exactly what to run — friendly, not scary. Reached from the “Host ready” pill in the toolbar.</p>
+
+    <div class="win" style="max-width:820px">
+      <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span><span class="wtitle">Host readiness</span>
+        <span class="tbtools"><span class="pill warn"><span class="dot"></span>1 item needs attention</span></span>
+      </div>
+      <ul class="checks">
+        <li class="check"><span class="ci ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5 6.5 12 13 4.5"/></svg></span>
+          <div class="ctext"><div class="ct">Apple Silicon Mac, macOS 15+</div><div class="cd">macOS 26.3 · Mac16,12 — supported.</div></div></li>
+        <li class="check"><span class="ci ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5 6.5 12 13 4.5"/></svg></span>
+          <div class="ctext"><div class="ct">Not running inside a VM</div><div class="cd">Nested PV=3 guests can't boot. <span class="typ-mono">kern.hv_vmm_present = 0</span> — good.</div></div></li>
+        <li class="check"><span class="ci ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5 6.5 12 13 4.5"/></svg></span>
+          <div class="ctext"><div class="ct">SIP relaxed for research guests</div><div class="cd"><span class="typ-mono">csrutil</span> configured with <span class="typ-mono">allow-research-guests</span>.</div></div></li>
+        <li class="check"><span class="ci warn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4v5M8 11.5h.01"/></svg></span>
+          <div class="ctext"><div class="ct">AMFI allowlist (amfidont) is not running</div>
+            <div class="cd">Without it, launching the signed VM binary is killed on start. Start the helper — it must stay running while you use VMs.</div>
+            <div class="cfix"><span class="btn primary sm">Start amfidont</span> <span class="btn sm">Show me the command</span></div></div></li>
+        <li class="check"><span class="ci ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5 6.5 12 13 4.5"/></svg></span>
+          <div class="ctext"><div class="ct">vphone-cli found</div><div class="cd"><span class="typ-mono">/opt/homebrew/bin/vphone-cli</span> → v1.0.1</div></div></li>
+      </ul>
+    </div>
+
+    <div class="cap">
+      <div class="anno"><span class="b">source</span><span>Checks reuse the CLI's own <span class="typ-mono">boot_host_preflight.sh</span> where possible, plus direct <span class="typ-mono">sysctl</span>/<span class="typ-mono">csrutil</span> reads — so the app and the CLI never disagree about whether the host is ready.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ DESIGN LANGUAGE ============ -->
+  <section class="section">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Design language</h2></div>
+    <p class="sec-note">Inherits the vphone toolchain's flat, precise, dark-neutral identity — softened for approachability. One blue accent; status color kept separate and meaningful.</p>
+    <div class="legend">
+      <div class="lg">
+        <h4>Palette</h4>
+        <div class="swatches">
+          <div class="sw"><i style="background:#5b9bff"></i><span class="lab"><b>Accent</b> · systemBlue — actions, selection</span></div>
+          <div class="sw"><i style="background:#3fb950"></i><span class="lab"><b>Good</b> · running, ready</span></div>
+          <div class="sw"><i style="background:#d29922"></i><span class="lab"><b>Warn</b> · needs attention</span></div>
+          <div class="sw"><i style="background:#f85149"></i><span class="lab"><b>Critical</b> · stop, destructive</span></div>
+          <div class="sw"><i style="background:#101216"></i><span class="lab"><b>Ground</b> · cool near-black</span></div>
+        </div>
+      </div>
+      <div class="lg">
+        <h4>Type — friendly face, technical soul</h4>
+        <div class="typ-row"><div class="big typ-sans">SF Pro — UI &amp; copy</div><div class="small">Approachable, native, non-threatening</div></div>
+        <div class="typ-row"><div class="big typ-mono">SF Mono — logs · paths · values</div><div class="small">Research-instrument texture, reserved for data</div></div>
+      </div>
+      <div class="lg">
+        <h4>Principles</h4>
+        <div class="swatches" style="gap:10px">
+          <div class="sw"><span class="lab">Flat surfaces, 1px borders, no busy chrome</span></div>
+          <div class="sw"><span class="lab">Plain-English status before technical detail</span></div>
+          <div class="sw"><span class="lab">Every scary step is explained, never silent</span></div>
+          <div class="sw"><span class="lab">Adapts to light &amp; dark automatically</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">vphone Workstation · proposed design · shells out to vphone-cli · no special entitlements required</p>
+
+</div>
+</div>
