@@ -183,7 +183,7 @@ struct VMDetailView: View {
 
     private func exportVM() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "\(row.report.name).tar.xz"
+        panel.nameFieldStringValue = "\(row.report.name).tar.zst"
         if panel.runModal() == .OK, let out = panel.url?.path {
             presentOperation(services.taskCenter.start(
                 title: "Export \(row.report.name)", plannedStages: [],

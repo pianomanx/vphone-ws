@@ -191,7 +191,6 @@ struct LibraryView: View {
 
     private func importVM() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.init(filenameExtension: "xz")!]
         if panel.runModal() == .OK, let url = panel.url {
             let base = url.deletingPathExtension().deletingPathExtension().lastPathComponent
             operationTask = services.taskCenter.start(
