@@ -10,5 +10,5 @@ import Testing
 @Test func exportAndImportArgs() {
     let b = VPhoneCommandBuilder(libraryRoot: nil)
     #expect(b.exportArgs(name: "a", out: "/tmp/a.tar.xz") == ["vm","export","a","-o","/tmp/a.tar.xz"])
-    #expect(b.importArgs(archive: "/tmp/a.tar.xz", name: "restored") == ["vm","import","-i","/tmp/a.tar.xz","-n","restored"])
+    #expect(b.importArgs(archive: "/tmp/a.tar.xz", name: "restored") == ["vm","import","/tmp/a.tar.xz","-n","restored"])
 }

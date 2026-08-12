@@ -28,7 +28,7 @@ public struct VPhoneCommandBuilder: Sendable {
     }
 
     public func importArgs(archive: String, name: String) -> [String] {
-        withLibraryRoot(["vm", "import", "-i", archive, "-n", name])
+        withLibraryRoot(["vm", "import", archive, "-n", name])
     }
 
     private func withLibraryRoot(_ argv: [String]) -> [String] {
