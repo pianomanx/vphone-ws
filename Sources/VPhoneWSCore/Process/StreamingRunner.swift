@@ -127,6 +127,20 @@ private final class ResumeGuard: @unchecked Sendable {
 public struct SystemStreamingRunner: StreamingRunner {
     public init() {}
 
+    /// A Finder/launchd-launched app gets a minimal PATH without Homebrew, so
+    /// bsdtar's `--zstd` (which execs external `zstd`) fails on export. Append
+    /// the Homebrew bin dirs, keeping system binaries first.
+    static func withHomebrewPath(_ env: [String: String]) -> [String: String] {
+        var env = env
+        var entries = (env["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin")
+            .split(separator: ":", omittingEmptySubsequences: true).map(String.init)
+        for dir in ["/opt/homebrew/bin", "/usr/local/bin"] where !entries.contains(dir) {
+            entries.append(dir)
+        }
+        env["PATH"] = entries.joined(separator: ":")
+        return env
+    }
+
     public func run(executable: URL, arguments: [String], environment: [String: String]?,
                     onStart: @escaping @Sendable (Int32) -> Void,
                     onEvent: @escaping @Sendable (StreamEvent) -> Void) async throws -> Int32 {
@@ -156,6 +170,7 @@ public struct SystemStreamingRunner: StreamingRunner {
             // Python (pmd3 restore bridge) block-buffers stdout even on a TTY;
             // force it unbuffered so its lines stream live like everything else.
             env["PYTHONUNBUFFERED"] = "1"
+            env = Self.withHomebrewPath(env)
             process.environment = env
             process.standardOutput = slaveHandle
             process.standardError = slaveHandle

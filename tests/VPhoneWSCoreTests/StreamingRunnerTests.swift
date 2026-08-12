@@ -112,6 +112,28 @@ func systemStreamerStripsAnsiEscapes() async throws {
     #expect(collector.seenLines == ["aREDb"])
 }
 
+@Test func withHomebrewPathAppendsBrewDirsWithoutDuplicating() {
+    let augmented = SystemStreamingRunner.withHomebrewPath(["PATH": "/usr/bin:/bin"])
+    #expect(augmented["PATH"] == "/usr/bin:/bin:/opt/homebrew/bin:/usr/local/bin")
+
+    let idempotent = SystemStreamingRunner.withHomebrewPath(["PATH": "/opt/homebrew/bin:/usr/bin"])
+    #expect(idempotent["PATH"] == "/opt/homebrew/bin:/usr/bin:/usr/local/bin")
+}
+
+@Test(.timeLimit(.minutes(1)))
+func systemStreamerGivesChildHomebrewOnPath() async throws {
+    let runner = SystemStreamingRunner()
+    let collector = StreamCollector()
+    let code = try await runner.run(
+        executable: URL(fileURLWithPath: "/bin/sh"),
+        arguments: ["-c", "echo $PATH"],
+        environment: ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"],
+        onStart: { _ in },
+        onEvent: { if case .line(let s) = $0 { collector.recordLine(s) } })
+    #expect(code == 0)
+    #expect(collector.seenLines.contains { $0.split(separator: ":").contains("/opt/homebrew/bin") })
+}
+
 private final class TimedRecorder: @unchecked Sendable {
     private let lock = NSLock()
     private var _lines: [String] = []
